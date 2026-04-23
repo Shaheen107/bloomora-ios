@@ -10,9 +10,22 @@
 		3B6A346A2F966E6C00EEA2BE /* Bloomora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Bloomora.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3BF2916D2F994B6E0060D5B8 /* Exceptions for "Bloomora" folder in "Bloomora" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 3B6A34692F966E6C00EEA2BE /* Bloomora */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		3B6A346C2F966E6C00EEA2BE /* Bloomora */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3BF2916D2F994B6E0060D5B8 /* Exceptions for "Bloomora" folder in "Bloomora" target */,
+			);
 			path = Bloomora;
 			sourceTree = "<group>";
 		};
@@ -254,6 +267,7 @@
 				DEVELOPMENT_TEAM = BWR4293UJ8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Bloomora/Info.plist;
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Bloomora saves your wallpaper designs to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -292,6 +306,7 @@
 				DEVELOPMENT_TEAM = BWR4293UJ8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Bloomora/Info.plist;
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Bloomora saves your wallpaper designs to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

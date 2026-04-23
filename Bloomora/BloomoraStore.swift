@@ -1,5 +1,4 @@
 import Foundation
-import Observation
 
 enum DrinkKind: String, CaseIterable, Codable, Identifiable {
     case water
@@ -14,22 +13,26 @@ enum DrinkKind: String, CaseIterable, Codable, Identifiable {
 
     var title: String {
         switch self {
-        case .water:    "Water"
-        case .milk:     "Milk"
-        case .coffee:   "Coffee"
-        case .drink:    "Drink"
-        case .milkTea:  "MilkTea"
-        case .tea:      "Tea"
-        case .other:    "Other"
+        case .water:   "Water"
+        case .milk:    "Milk"
+        case .coffee:  "Coffee"
+        case .drink:   "Drink"
+        case .milkTea: "MilkTea"
+        case .tea:     "Tea"
+        case .other:   "Other"
         }
     }
 
     var stepAmount: Int {
         switch self {
-        case .water:                        300
-        case .milk:                         250
-        case .coffee:                       100
-        case .drink, .milkTea, .tea, .other: 200
+        case .water:
+            300
+        case .milk:
+            250
+        case .coffee:
+            100
+        case .drink, .milkTea, .tea, .other:
+            200
         }
     }
 }
@@ -44,26 +47,30 @@ enum FlowerSpecies: String, CaseIterable, Codable, Identifiable {
 
     var title: String {
         switch self {
-        case .sunflower:  "Sunflower"
-        case .blueBloom:  "Blue Flower"
-        case .lily:       "Lily"
-        case .rose:       "Rose"
+        case .sunflower: "Sunflower"
+        case .blueBloom: "Blue Flower"
+        case .lily:      "Lily"
+        case .rose:      "Rose"
         }
     }
 }
 
 enum FlowerStage: Int, CaseIterable, Codable {
-    case seed   = 0
+    case seed = 0
     case sprout = 1
-    case bud    = 2
-    case bloom  = 3
+    case bud = 2
+    case bloom = 3
 
     func homeCopy(progress: Double) -> String {
         switch self {
-        case .seed:   "A tiny start. Keep sipping to wake your flower."
-        case .sprout: "Roots are settling in. You're building a healthy rhythm."
-        case .bud:    "Almost there. One more round of hydration opens today's bloom."
-        case .bloom:  progress >= 1 ? "Today's flower is fully open." : "Your blossom is opening beautifully."
+        case .seed:
+            "A tiny start. Keep sipping to wake your flower."
+        case .sprout:
+            "Roots are settling in. You're building a healthy rhythm."
+        case .bud:
+            "Almost there. One more round of hydration opens today's bloom."
+        case .bloom:
+            progress >= 1 ? "Today's flower is fully open." : "Your blossom is opening beautifully."
         }
     }
 }
@@ -117,39 +124,42 @@ struct ReminderSlot: Identifiable, Codable, Hashable {
 
 enum BloomoraFormatters {
     static let homeDate: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.dateFormat = "MM/dd/yyyy"
-        return f
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "MM/dd/yyyy"
+        return formatter
     }()
 
     static let monthTitle: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.dateFormat = "yyyy/MM"
-        return f
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy/MM"
+        return formatter
     }()
 
     static let dayNumber: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.dateFormat = "d"
-        return f
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "d"
+        return formatter
     }()
 
     static let reminderTime: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.dateFormat = "h:mm a"
-        return f
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "h:mm a"
+        return formatter
     }()
 }
 
-@Observable
+extension Notification.Name {
+    static let bloomoraStoreDidChange = Notification.Name("BloomoraStoreDidChange")
+}
+
 final class BloomoraStore {
-    var dailyGoal: Int
-    var selectedDate: Date
-    var reminders: [ReminderSlot]
+    private(set) var dailyGoal: Int
+    private var storedSelectedDate: Date
+    private(set) var reminders: [ReminderSlot]
 
     private(set) var entries: [DrinkEntry]
     private(set) var flowers: [GardenFlower]
@@ -159,34 +169,48 @@ final class BloomoraStore {
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 
-    private let goalKey      = "Bloomora.dailyGoal"
-    private let entriesKey   = "Bloomora.entries"
-    private let flowersKey   = "Bloomora.flowers"
+    private let goalKey = "Bloomora.dailyGoal"
+    private let entriesKey = "Bloomora.entries"
+    private let flowersKey = "Bloomora.flowers"
     private let remindersKey = "Bloomora.reminders"
 
     init(defaults: UserDefaults = .standard) {
-        var cal = Calendar(identifier: .gregorian)
-        cal.firstWeekday = 1
-        calendar = cal
+        var gregorian = Calendar(identifier: .gregorian)
+        gregorian.firstWeekday = 1
+
+        calendar = gregorian
         self.defaults = defaults
+        dailyGoal = defaults.object(forKey: "Bloomora.dailyGoal") as? Int ?? 2000
+        storedSelectedDate = gregorian.startOfDay(for: .now)
+        entries = []
+        flowers = []
+        reminders = Self.defaultReminders
 
-        // Default daily goal is 2000ml (matches screenshot)
-        dailyGoal    = defaults.object(forKey: "Bloomora.dailyGoal") as? Int ?? 2000
-        selectedDate = cal.startOfDay(for: .now)
-        entries      = []
-        flowers      = []
-        reminders    = Self.defaultReminders
-
-        if let saved = load([DrinkEntry].self,   key: entriesKey)   { entries   = saved }
-        if let saved = load([GardenFlower].self, key: flowersKey)   { flowers   = saved }
-        if let saved = load([ReminderSlot].self, key: remindersKey) { reminders = saved }
+        if let savedEntries = load([DrinkEntry].self, key: entriesKey) {
+            entries = savedEntries
+        }
+        if let savedFlowers = load([GardenFlower].self, key: flowersKey) {
+            flowers = savedFlowers
+        }
+        if let savedReminders = load([ReminderSlot].self, key: remindersKey) {
+            reminders = savedReminders
+        }
 
         if !entries.isEmpty {
             ensureFlowerRegistry()
         }
     }
 
-    // MARK: Computed
+    var selectedDate: Date {
+        get { storedSelectedDate }
+        set {
+            let normalized = calendar.startOfDay(for: newValue)
+            guard storedSelectedDate != normalized else { return }
+            storedSelectedDate = normalized
+            notifyObservers()
+        }
+    }
+
     var unlockedFlowerCount: Int { flowers.count }
 
     var sortedFlowers: [GardenFlower] {
@@ -201,33 +225,35 @@ final class BloomoraStore {
         ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
     }
 
-    // MARK: Mutations
-    func addDrink(_ kind: DrinkKind, on date: Date = .now) {
+    func addDrink(_ kind: DrinkKind, amount: Int? = nil, on date: Date = .now) {
         let resolved = calendar.date(
-            bySettingHour:   calendar.component(.hour,   from: .now),
-            minute:          calendar.component(.minute, from: .now),
+            bySettingHour: calendar.component(.hour, from: .now),
+            minute: calendar.component(.minute, from: .now),
             second: 0,
             of: date
         ) ?? date
 
-        entries.append(DrinkEntry(kind: kind, amount: kind.stepAmount, loggedAt: resolved))
+        let resolvedAmount = max(amount ?? kind.stepAmount, 1)
+        entries.append(DrinkEntry(kind: kind, amount: resolvedAmount, loggedAt: resolved))
         ensureFlower(for: resolved)
         save(entries, key: entriesKey)
         save(flowers, key: flowersKey)
+        notifyObservers()
     }
 
     func updateDailyGoal(to amount: Int) {
         dailyGoal = max(250, amount)
         defaults.set(dailyGoal, forKey: goalKey)
+        notifyObservers()
     }
 
     func updateReminder(_ id: UUID, isEnabled: Bool) {
         guard let index = reminders.firstIndex(where: { $0.id == id }) else { return }
         reminders[index].enabled = isEnabled
         save(reminders, key: remindersKey)
+        notifyObservers()
     }
 
-    // MARK: Queries
     func totalIntake(on date: Date) -> Int {
         entries
             .filter { calendar.isDate($0.loggedAt, inSameDayAs: date) }
@@ -248,36 +274,42 @@ final class BloomoraStore {
     }
 
     func stage(for date: Date) -> FlowerStage {
-        let p = progressRatio(on: date)
-        switch p {
-        case ..<0.30: return .seed
-        case ..<0.60: return .sprout
-        case ..<1:    return .bud
-        default:      return .bloom
+        let progress = progressRatio(on: date)
+        switch progress {
+        case ..<0.30:
+            return FlowerStage.seed
+        case ..<0.60:
+            return FlowerStage.sprout
+        case ..<1:
+            return FlowerStage.bud
+        default:
+            return FlowerStage.bloom
         }
     }
 
     func flower(on date: Date) -> GardenFlower {
         let day = calendar.startOfDay(for: date)
-        if let f = flowers.first(where: { calendar.isDate($0.plantedOn, inSameDayAs: day) }) {
-            return f
+        if let flower = flowers.first(where: { calendar.isDate($0.plantedOn, inSameDayAs: day) }) {
+            return flower
         }
         return GardenFlower(plantedOn: day, species: species(for: day))
     }
 
     func monthGrid(for month: Date) -> [Date?] {
-        let monthStart   = startOfMonth(for: month)
+        let monthStart = startOfMonth(for: month)
         let numberOfDays = calendar.range(of: .day, in: .month, for: monthStart) ?? 1..<2
         let firstWeekday = calendar.component(.weekday, from: monthStart)
-        let leading      = (firstWeekday - calendar.firstWeekday + 7) % 7
+        let leading = (firstWeekday - calendar.firstWeekday + 7) % 7
 
         var grid = Array<Date?>(repeating: nil, count: leading)
         for day in numberOfDays {
-            if let d = calendar.date(byAdding: .day, value: day - 1, to: monthStart) {
-                grid.append(d)
+            if let date = calendar.date(byAdding: .day, value: day - 1, to: monthStart) {
+                grid.append(date)
             }
         }
-        while grid.count % 7 != 0 { grid.append(nil) }
+        while grid.count % 7 != 0 {
+            grid.append(nil)
+        }
         return grid
     }
 
@@ -289,7 +321,6 @@ final class BloomoraStore {
         calendar.isDate(date, inSameDayAs: selectedDate)
     }
 
-    // MARK: Private helpers
     private func ensureFlowerRegistry() {
         let days = Set(entries.map { calendar.startOfDay(for: $0.loggedAt) })
         for day in days where !flowers.contains(where: { calendar.isDate($0.plantedOn, inSameDayAs: day) }) {
@@ -319,10 +350,14 @@ final class BloomoraStore {
         defaults.set(data, forKey: key)
     }
 
+    private func notifyObservers() {
+        NotificationCenter.default.post(name: .bloomoraStoreDidChange, object: self)
+    }
+
     private static let defaultReminders: [ReminderSlot] = [
-        ReminderSlot(title: "Morning bloom",     hour:  9, minute:  0, enabled: true),
-        ReminderSlot(title: "Midday sip",        hour: 12, minute: 30, enabled: true),
+        ReminderSlot(title: "Morning bloom", hour: 9, minute: 0, enabled: true),
+        ReminderSlot(title: "Midday sip", hour: 12, minute: 30, enabled: true),
         ReminderSlot(title: "Afternoon refresh", hour: 15, minute: 30, enabled: true),
-        ReminderSlot(title: "Evening top-up",    hour: 18, minute: 30, enabled: false)
+        ReminderSlot(title: "Evening top-up", hour: 18, minute: 30, enabled: false)
     ]
 }

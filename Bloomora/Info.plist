@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>UIAppFonts</key>
+        <array>
+            <string>PlayfairDisplay-Regular.ttf</string>
+            <string>PlayfairDisplay-Medium.ttf</string>
+            <string>PlayfairDisplay-SemiBold.ttf</string>
+            <string>PlayfairDisplay-Italic.ttf</string>
+        </array>
+        <key>NSPhotoLibraryAddUsageDescription</key>
+        <string>Bloomora saves your flower wallpapers to your Photos library.</string>
+    </dict>
+</plist>
