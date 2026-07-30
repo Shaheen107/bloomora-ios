@@ -39,6 +39,7 @@ extension DrinkKind {
 }
 
 // MARK: - Progress Track (matches screenshot: 4 hand-drawn stage icons on a line)
+
 struct BloomoraProgressTrack: View {
     let stage: FlowerStage
 
